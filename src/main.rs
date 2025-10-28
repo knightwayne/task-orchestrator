@@ -33,8 +33,8 @@ async fn execute_task(task: TaskInput) -> TaskOutput {
     };
 
     if task.task_type != "process_data" {
-        output.final_status = "Skipped".to_string();
-        output.error_info = format!("Unsupported task_type: {}", task.task_type);
+        output.final_status = "Failed".to_string();
+        output.error_info = format!("unsupported task_type: {}", task.task_type);
         return output;
     }
 
@@ -49,7 +49,7 @@ async fn execute_task(task: TaskInput) -> TaskOutput {
     }
 
     // sleep to pause
-    sleep(Duration::from_millis(3000)).await;
+    sleep(Duration::from_millis(5000)).await;
 
     // output 
     eprintln!("Task {} completed successfully", task.task_id);
@@ -69,9 +69,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let input_path = &args[1];
-    // let output_path = &args[2];
 
-    //  Read CSV
+    //Input
     let file = File::open(input_path)?;
     let mut rdr = csv::Reader::from_reader(file);
 
@@ -89,17 +88,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // JoinHandle
-    // Approach 1 - collect handles in vector
     let mut result_vector: Vec<TaskOutput> = Vec::new();
     for handle in handles {
         if let Ok(task_output) = handle.await {
             result_vector.push(task_output);
         }
     }
-    // Approach 2 - use join_all for better concurrency
-    // let result_vector: Vec<TaskOutput> = join_all(handles).await.into_iter().filter_map(Result::ok).collect();
 
-    //Output CSV
+    //Output
     let mut wtr = csv::Writer::from_writer(std::io::stdout());
     for r in result_vector {
         wtr.serialize(r)?;
