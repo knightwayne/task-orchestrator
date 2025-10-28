@@ -3,11 +3,11 @@ task_id,final_status,error_info
 91,Completed,
 106,Completed,
 103,Completed,
-104,Skipped,Unsupported task_type: fprocess_data
+104,Failed,unsupported task_type: fprocess_data
 105,Completed,
 108,Completed,
 107,Completed,
 101,Completed,
-109,Skipped,Unsupported task_type: process_fdata
+109,Failed,unsupported task_type: process_fdata
 110,Completed,
-94,Skipped,Unsupported task_type:  process_data
+94,Failed,unsupported task_type:  process_data
