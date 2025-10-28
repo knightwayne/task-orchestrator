@@ -2,6 +2,8 @@
 
 Asynchronous Task Orchestrator written in Rust to concurrently process HTTP request. This program uses a task pool (using tokio runtime) and asynchronlisly executes the blueprint task of fetch-sleep-print. serde and csv crates are used to read/write to CSV files.
 
+[![Rust CI](https://github.com/knightwayne/task-orchestrator/actions/workflows/main.yml/badge.svg)](https://github.com/knightwayne/task-orchestrator/actions/workflows/main.yml)
+
 ## Design Approach
 
 1. Program starts in ```async main()```, it parses command line input to get the input CSV file path.
