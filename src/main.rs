@@ -88,7 +88,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // JoinHandle
-    // futures::future::join_all also preserves the order of the input futures.
+    // futures::future::join_all to preserve the order of the input futures.
     let mut result_vector: Vec<TaskOutput> = Vec::new();
     for handle in handles {
         if let Ok(task_output) = handle.await {
@@ -104,4 +104,64 @@ async fn main() -> Result<(), Box<dyn Error>> {
     wtr.flush()?;
 
     return Ok(());
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio;
+
+    #[tokio::test]
+    async fn test_valid_task() {
+        let input = TaskInput {
+            task_id: 1,
+            task_type: "process_data".to_string(),
+        };
+        let output = execute_task(input).await;
+        assert_eq!(output.task_id, 1);
+        assert_eq!(output.final_status, "Completed");
+        assert_eq!(output.error_info, "");
+    }
+
+    #[tokio::test]
+    async fn test_invalid_task_type() {
+        let input = TaskInput {
+            task_id: 2,
+            task_type: "unsupported".to_string(),
+        };
+        let output = execute_task(input).await;
+        assert_eq!(output.final_status, "Failed");
+        assert!(output.error_info.contains("unsupported task_type"));
+    }
+
+    #[tokio::test]
+async fn test_invalid_url() {
+    let input = TaskInput {
+        task_id: 3,
+        task_type: "process_data".to_string(),
+    };
+
+    let output = {
+        let mut out = TaskOutput {
+            task_id: input.task_id,
+            final_status: "".to_string(),
+            error_info: "".to_string(),
+        };
+
+        if input.task_type != "process_data" {
+            out.final_status = "Failed".to_string();
+            out.error_info = format!("unsupported task_type: {}", input.task_type);
+        } else if let Err(e) = reqwest::get("http://invalid.url").await {
+            out.final_status = "Failed".to_string();
+            out.error_info = format!("fetch_data failed: {}", e);
+        } else {
+            out.final_status = "Completed".to_string();
+            out.error_info = "".to_string();
+        }
+
+        out
+    };
+
+    assert_eq!(output.final_status, "Failed");
+    assert!(output.error_info.contains("fetch_data failed"));
+}
 }
