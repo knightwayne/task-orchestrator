@@ -759,6 +759,7 @@ dependencies = [
  "futures",
  "reqwest",
  "serde",
+ "serde_derive",
  "tokio",
 ]
 

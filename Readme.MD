@@ -43,9 +43,10 @@ cd <repo-folder>
 cargo add tokio reqwest csv serde serde_derive
 ```
 
-## Run
+## Build and Run
 
 ```
+cargo build
 cargo run -- <input_csv_path> > results.csv
 ```
 

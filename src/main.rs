@@ -88,6 +88,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // JoinHandle
+    // futures::future::join_all also preserves the order of the input futures.
     let mut result_vector: Vec<TaskOutput> = Vec::new();
     for handle in handles {
         if let Ok(task_output) = handle.await {
