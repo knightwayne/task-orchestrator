@@ -1,8 +1,11 @@
 use std::fs::File;
+use std::env;
+// use std::io::stdout;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use tokio::time::{sleep, Duration};
 use tokio::task;
+// use futures::future::join_all;
 use reqwest;
 
 static URL: &str = "https://httpbin.org/get";
@@ -58,8 +61,18 @@ async fn execute_task(task: TaskInput) -> TaskOutput {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage: cargo run -- <input_csv_path> > output.csv");
+        std::process::exit(1);
+    }
+
+    let input_path = &args[1];
+    // let output_path = &args[2];
+
     //  Read CSV
-    let file = File::open("./src/input.csv")?;
+    let file = File::open(input_path)?;
     let mut rdr = csv::Reader::from_reader(file);
 
     let mut task_vector: Vec<TaskInput> = Vec::new();
@@ -76,15 +89,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // JoinHandle
-    let mut result_vector = Vec::new();
+    // Approach 1 - collect handles in vector
+    let mut result_vector: Vec<TaskOutput> = Vec::new();
     for handle in handles {
         if let Ok(task_output) = handle.await {
             result_vector.push(task_output);
         }
     }
+    // Approach 2 - use join_all for better concurrency
+    // let result_vector: Vec<TaskOutput> = join_all(handles).await.into_iter().filter_map(Result::ok).collect();
 
     //Output CSV
-    let mut wtr = csv::Writer::from_path("./src/output.csv")?;
+    let mut wtr = csv::Writer::from_writer(std::io::stdout());
     for r in result_vector {
         wtr.serialize(r)?;
     }
